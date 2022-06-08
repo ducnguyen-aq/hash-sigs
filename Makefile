@@ -8,7 +8,8 @@ all: hss_lib.a \
      hss_lib_thread.a \
      hss_verify.a \
      demo \
-     test_hss
+     test_hss \
+     nist_test
 
 hss_lib.a: hss.o hss_alloc.o hss_aux.o hss_common.o \
      hss_compute.o hss_generate.o hss_keygen.o hss_param.o hss_reserve.o \
@@ -25,7 +26,7 @@ hss_lib_thread.a: hss.o hss_alloc.o hss_aux.o hss_common.o \
      hss_verify.o hss_verify_inc.o \
      hss_derive.o hss_zeroize.o lm_common.o \
      lm_ots_common.o lm_ots_sign.o lm_ots_verify.o lm_verify.o endian.o \
-     hash.o sha256.o
+     hash.o sha256.o nist.o
 	$(AR) rcs $@ $^
 
 hss_verify.a: hss_verify.o hss_verify_inc.o hss_common.o hss_thread_single.o \
@@ -35,6 +36,9 @@ hss_verify.a: hss_verify.o hss_verify_inc.o hss_common.o hss_thread_single.o \
 
 demo: demo.c hss_lib_thread.a
 	$(CC) $(CFLAGS) demo.c hss_lib_thread.a -lcrypto -lpthread -o demo
+
+nist_test: nist.c nist_test.c hss_lib_thread.a params.h
+	$(CC) $(CFLAGS) nist_test.c hss_lib_thread.a -lcrypto -lpthread -loqs -o $@
 
 test_1: test_1.c lm_ots_common.o lm_ots_sign.o lm_ots_verify.o  endian.o hash.o sha256.o hss_zeroize.o
 	$(CC) $(CFLAGS) -o test_1 test_1.c lm_ots_common.o lm_ots_sign.o lm_ots_verify.o  endian.o hash.o sha256.o hss_zeroize.o -lcrypto
@@ -116,6 +120,9 @@ hash.o: hash.c hash.h sha256.h hss_zeroize.h
 
 sha256.o: sha256.c sha256.h endian.h
 	$(CC) $(CFLAGS) -c sha256.c -o $@
+
+nist.o: nist.c params.h
+	$(CC) $(CFLAGS) -c nist.c -llibops -o $@
 
 clean:
 	-rm *.o *.a demo test_hss
