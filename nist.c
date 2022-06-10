@@ -39,10 +39,10 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
     /* Initialize NIST KAT, this time it reads from /dev/urandom */
     OQS_randombytes_nist_kat_init_256bit(buf, NULL);
 
-#if NIST_LEVEL == 1
+#if NIST_LEVEL < 2
     param_set_t lm_type[] = {PARAM_LM_HEIGHT};
     param_set_t ots_type[] = {PARAM_OTS_WIDTH};
-#elif NIST_LEVEL < 4
+#elif NIST_LEVEL < 5
     param_set_t lm_type[] = {PARAM_LM_HEIGHT0, PARAM_LM_HEIGHT1};
     param_set_t ots_type[] = {PARAM_OTS_WIDTH, PARAM_OTS_WIDTH};
 #else
@@ -58,7 +58,6 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
     unsigned char *aux_data = malloc(aux_data_len);
 
     unsigned long pubkey_size = hss_get_public_key_len(levels, lm_type, ots_type);
-    unsigned long privkey_size = hss_get_private_key_len(levels, lm_type, ots_type);
 
 #if DEBUG
     struct hss_extra_info info = {0};
@@ -67,6 +66,7 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
                                             NULL, sk, pk, pubkey_size, aux_data, aux_data_len, &info);
 
     printf("error = %d\n", info.error_code);
+    printf("aux_data_len =  %lu\n", aux_data_len);
 #else
     bool success = hss_generate_private_key(LMS_randombytes, levels, lm_type, ots_type,
                                             NULL, sk, pk, pubkey_size, aux_data, aux_data_len, NULL);
