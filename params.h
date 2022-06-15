@@ -4,37 +4,11 @@
 #include "common_defs.h"
 
 #ifndef NIST_LEVEL
-    #define NIST_LEVEL 1
+#define NIST_LEVEL 1
 #endif
-
-#define DEBUG 0
 
 #define LMS_PUBLICKEYBYTES 60
 #define LMS_SECRETKEYBYTES 64
-
-// NIST LEVEL 0: h = 10
-#define LMS_H10_BYTES 1456
-
-// NIST LEVEL 1: h = 15
-#define LMS_H15_BYTES 1616
-
-// NIST LEVEL 2: h = 20
-#define LMS_H20_BYTES 2964
-
-// NIST LEVEL 3: h = 25
-#define LMS_H25_BYTES 3124
-
-// NIST LEVEL 4: h = 30
-#define LMS_H30_BYTES 3284
-
-// NIST LEVEL 5: h = 35
-#define LMS_H35_BYTES 4632
-
-// NIST LEVEL 6: h = 40
-#define LMS_H40_BYTES 4792
-
-#define CRYPTO_PUBLIC_KEY LMS_PUBLICKEYBYTES
-#define CRYPTO_SECRET_KEY LMS_SECRETKEYBYTES
 
 /*
  * I couldn't find security analysis to match NIST security levels anywhere
@@ -42,6 +16,7 @@
  */
 #if NIST_LEVEL == 0
 /*
+// NIST LEVEL 0: h = 10
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -51,11 +26,13 @@
 #define PARAM_LM_HEIGHT LMS_SHA256_N32_H10
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H10_BYTES
+#define LMS_H10_BYTES 1456
 
+#define LMS_SIGNBYTES LMS_H10_BYTES
 
 #elif NIST_LEVEL == 1
 /*
+// NIST LEVEL 1: h = 15
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -65,7 +42,9 @@
 #define PARAM_LM_HEIGHT LMS_SHA256_N32_H15
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H15_BYTES
+#define LMS_H15_BYTES 1616
+
+#define LMS_SIGNBYTES LMS_H15_BYTES
 
 #elif NIST_LEVEL == 2
 /*
@@ -83,10 +62,14 @@
 
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H20_BYTES
+// NIST LEVEL 2: h = 20
+#define LMS_H20_BYTES 2964
+
+#define LMS_SIGNBYTES LMS_H20_BYTES
 
 #elif NIST_LEVEL == 3
 /*
+// NIST LEVEL 3: h = 25
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -98,10 +81,13 @@
 #define PARAM_LM_HEIGHT1 LMS_SHA256_N32_H15
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H25_BYTES
+#define LMS_H25_BYTES 3124
+
+#define LMS_SIGNBYTES LMS_H25_BYTES
 
 #elif NIST_LEVEL == 4
 /*
+// NIST LEVEL 4: h = 30
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -115,10 +101,13 @@
 
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H30_BYTES
+#define LMS_H30_BYTES 3284
+
+#define LMS_SIGNBYTES LMS_H30_BYTES
 
 #elif NIST_LEVEL == 5
 /*
+// NIST LEVEL 5: h = 35
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -133,10 +122,13 @@
 
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H35_BYTES
+#define LMS_H35_BYTES 4632
+
+#define LMS_SIGNBYTES LMS_H35_BYTES
 
 #elif NIST_LEVEL == 6
 /*
+// NIST LEVEL 6: h = 40
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
 | ParmSet      | KeyGenSize | SigSize | #Signatures | Keypair (s) | Sign (us) | Verify (us) |
 +--------------+------------+---------+-------------+-------------+-----------+-------------+
@@ -152,11 +144,17 @@
 
 #define PARAM_OTS_WIDTH LMOTS_SHA256_N32_W8
 
-#define CRYPTO_BYTES LMS_H40_BYTES
+#define LMS_H40_BYTES 4792
+
+#define LMS_SIGNBYTES LMS_H40_BYTES
 
 #else
 #error "Unspecified NIST_LEVEL {0,1,2,3,4,5,6}"
 
 #endif
+
+#define CRYPTO_PUBLIC_KEY (LMS_PUBLICKEYBYTES)
+#define CRYPTO_SECRET_KEY (LMS_SECRETKEYBYTES)
+#define CRYPTO_BYTES LMS_SIGNBYTES
 
 #endif

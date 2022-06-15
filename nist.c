@@ -7,6 +7,8 @@
 #include "endian.h"
 #include "params.h"
 
+#define DEBUG 0
+
 /* A simple wrapper around OQS randombytes to return True */
 static bool LMS_randombytes(void *output, size_t len)
 {
@@ -15,7 +17,7 @@ static bool LMS_randombytes(void *output, size_t len)
 }
 
 /*************************************************
- * Name:        LMS_crypto_sign_keypair
+ * Name:        crypto_sign_keypair
  *
  * Description: Generates public and private key.
  *
@@ -75,7 +77,9 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
     free(aux_data);
     if (!success)
     {
+#if DEBUG
         printf("Error generating keypair\n");
+#endif
         return OQS_ERROR;
     }
     return OQS_SUCCESS;
@@ -86,16 +90,16 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
  *
  * Description: Computes signature.
  *
- * Arguments:   - uint8_t *sig:   pointer to output signature (of length CRYPTO_BYTES)
- *              - size_t *siglen: pointer to output length of signature
- *              - uint8_t *m:     pointer to message to be signed
- *              - size_t mlen:    length of message
- *              - uint8_t *sk:    pointer to bit-packed secret key
+ * Arguments:   - uint8_t *sm:   pointer to output signature (of length CRYPTO_BYTES)
+ *              - uint8_t *m:    pointer to message to be signed
+ *              - uint8_t *sk:   pointer to bit-packed secret key
+ *              - unsigned long long *smlen: pointer to output length of signature
+ *              - unsigned long long mlen:   length of message
  *
  * Returns 0 (success), -1 otherwise
  **************************************************/
-int crypto_sign(unsigned char *sig, unsigned long *siglen,
-                const unsigned char *m, unsigned long mlen, unsigned char *sk)
+int crypto_sign(unsigned char *sm, unsigned long long *smlen,
+                const unsigned char *m, unsigned long long mlen, unsigned char *sk)
 {
     unsigned char aux_data[1024];
 
@@ -115,30 +119,35 @@ int crypto_sign(unsigned char *sig, unsigned long *siglen,
         printf("Error loading working key\n");
         return OQS_ERROR;
     }
-    size_t sig_len = hss_get_signature_len_from_working_key(working_key);
-    if (sig_len == 0)
+    unsigned long long siglen = hss_get_signature_len_from_working_key(working_key);
+    if (siglen == 0)
     {
+#if DEBUG
         printf("Error getting signature len\n");
+#endif
         hss_free_working_key(working_key);
         return OQS_ERROR;
     }
 #if DEUBG
-    bool success = hss_generate_signature(working_key, NULL, sk, m, mlen, sig, sig_len, &info);
+    bool success = hss_generate_signature(working_key, NULL, sk, m, mlen, sig, siglen, &info);
     printf("error = %d\n", info.error_code);
-    printf("siglen = %ld\n", sig_len);
+    printf("siglen = %ld\n", siglen);
 #else
-    bool success = hss_generate_signature(working_key, NULL, sk, m, mlen, sig, sig_len, NULL);
+    bool success = hss_generate_signature(working_key, NULL, sk, m, mlen, sm, siglen, NULL);
 #endif
 
     hss_free_working_key(working_key);
 
     if (!success)
     {
+#if DEBUG
         printf("Error generating signature\n");
+#endif
+        *smlen = 0;
         return OQS_ERROR;
     }
 
-    *siglen = sig_len;
+    *smlen = siglen;
 
     return OQS_SUCCESS;
 }
@@ -150,15 +159,15 @@ int crypto_sign(unsigned char *sig, unsigned long *siglen,
  *
  * Arguments:   - uint8_t *m: pointer to output message (allocated
  *                            array with smlen bytes), can be equal to sm
- *              - size_t *mlen: pointer to output length of message
  *              - const uint8_t *sm: pointer to signed message
- *              - size_t smlen: length of signed message
  *              - const uint8_t *pk: pointer to bit-packed public key
+ *              - unsigned long long *mlen: pointer to output length of message
+ *              - unsigned long long smlen: length of signed message
  *
  * Returns 0 if signed message could be verified correctly and -1 otherwise
  **************************************************/
-int crypto_sign_open(unsigned char *m, unsigned long *mlen,
-                     const unsigned char *sm, unsigned long smlen, const unsigned char *pk)
+int crypto_sign_open(unsigned char *m, unsigned long long *mlen,
+                     const unsigned char *sm, unsigned long long smlen, const unsigned char *pk)
 {
     bool success = hss_validate_signature(pk, m, *mlen, sm, smlen, 0);
 
@@ -174,14 +183,14 @@ int crypto_sign_open(unsigned char *m, unsigned long *mlen,
  *
  * Description: Return number of signature left
  *
- * Arguments:   - size_t *remain: remaining signatures
- *              - size_t *max: maximum number of possibile signature
+ * Arguments:   - unsigned long long *remain: remaining signatures
+ *              - unsigned long long *max: maximum number of possibile signature
  *              - const uint8_t *sk: pointer to bit-packed private key
  *
  * Returns 0 (sucess), -1 otherwise
  **************************************************/
-int crypto_remain_signatures(unsigned long *remain,
-                             unsigned long *max, unsigned char *sk)
+int crypto_remain_signatures(unsigned long long *remain,
+                             unsigned long long *max, unsigned char *sk)
 {
     unsigned char aux_data[10240];
     struct hss_working_key *working_key = hss_load_private_key(NULL, sk, 10240,
@@ -189,7 +198,9 @@ int crypto_remain_signatures(unsigned long *remain,
 
     if (!working_key)
     {
+#if DEBUG
         printf("Error loading working key\n");
+#endif
         return OQS_ERROR;
     }
     *max = working_key->max_count;
