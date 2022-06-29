@@ -1,5 +1,5 @@
-LDFLAGS=-L/opt/homebrew/opt/openssl@3/lib
-CPPFLAGS=-I/opt/homebrew/opt/openssl@3/include
+LDFLAGS=-L/opt/homebrew/opt/openssl@1.1/lib
+CPPFLAGS=-I/opt/homebrew/opt/openssl@1.1/include
 AR = /usr/bin/ar
 CC = /usr/bin/gcc 
 CFLAGS = -Wall -O3 $(LDFLAGS) $(CPPFLAGS)
@@ -122,7 +122,7 @@ sha256.o: sha256.c sha256.h endian.h
 	$(CC) $(CFLAGS) -c sha256.c -o $@
 
 nist.o: nist.c params.h
-	$(CC) $(CFLAGS) -c nist.c -llibops -o $@
+	$(CC) $(CFLAGS) -c nist.c -loqs -o $@
 
 clean:
 	-rm *.o *.a demo test_hss
